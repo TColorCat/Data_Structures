@@ -31,8 +31,8 @@ namespace Data_Structures
 
 		~BinarySearchTree(){};
 
-		const Comparable& findmin()const{ return findmin(); }
-		const Comparable& findmax()const{ return findmax(); }
+		const Comparable& findmin()const{ return findmin()->element; }
+		const Comparable& findmax()const{ return findmax()->element; }
 
 		bool contains(const Comparable& target)const;
 		bool isempty()const{ return root == nullptr; }
@@ -48,8 +48,8 @@ namespace Data_Structures
 	private:
 		void insert(const Comparable &x, BinaryNode*&t);
 		void remove(const Comparable &x, BinaryNode*&t);
-		Comparable& findmin(BinaryNode*t)const;
-		Comparable& findmax(BinaryNode*t)const;
+		BinaryNode* findmin(BinaryNode*t)const;
+		BinaryNode* findmax(BinaryNode*t)const;
 		bool contains(const Comparable& target, BinaryNode*t)const;
 		bool make_empty(BinaryNode*&t);
 		void printTree(BinaryNode*t,std::ostream&out)const;
