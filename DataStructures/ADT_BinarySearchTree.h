@@ -17,20 +17,25 @@ namespace Data_Structures
 				:element(Element), left(le), right(ri){}
 			/*BinaryNode(Comparable&& Element, BinaryNode*le, BinaryNode*ri)//应该是不行的
 				:element(std::move(Element)), left(le), right(ri){}*/
+
+			~BinaryNode(){ make_empty(); };
 		};
 		BinaryNode* root;
 		Comparator isLess;
 	public:
-		BinarySearchTree();
-		BinarySearchTree(const BinarySearchTree source);
+		BinarySearchTree(){};
+		BinarySearchTree(const BinarySearchTree& source) :root{ nullptr }
+		{
+			root = clone(source.root);
+		}
 
 		~BinarySearchTree(){};
 
-		const Comparable& findmin()const;
-		const Comparable& findmax()const;
+		const Comparable& findmin()const{ return findmin(); }
+		const Comparable& findmax()const{ return findmax(); }
 
 		bool contains(const Comparable& target)const;
-		bool isempty()const;
+		bool isempty()const{ return root == nullptr; }
 		void printTree()const;
 
 		void make_empty();
@@ -43,8 +48,8 @@ namespace Data_Structures
 	private:
 		void insert(const Comparable &x, BinaryNode*&t);
 		void remove(const Comparable &x, BinaryNode*&t);
-		const Comparable& findmin(BinaryNode*t)const;
-		const Comparable& findmax(BinaryNode*t)const;
+		Comparable& findmin(BinaryNode*t)const;
+		Comparable& findmax(BinaryNode*t)const;
 		bool contains(const Comparable& target, BinaryNode*t)const;
 		bool make_empty(BinaryNode*&t);
 		void printTree(BinaryNode*t,std::ostream&out)const;
