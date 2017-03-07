@@ -1,6 +1,7 @@
 #ifndef BinarySearch_h_
 #define BinarySearch_h_
 #include<iostream>
+#include<algorithm>
 namespace Data_Structures
 {
 	template<typename Comparable,typename Comparator=less<Comparable>>
@@ -31,8 +32,8 @@ namespace Data_Structures
 
 		~BinarySearchTree(){};
 
-		const Comparable& findmin()const{ return findmin()->element; }
-		const Comparable& findmax()const{ return findmax()->element; }
+		const Comparable& findmin()const{ return findmin(root)->element; }
+		const Comparable& findmax()const{ return findmax(root)->element; }
 
 		bool contains(const Comparable& target)const;
 		bool isempty()const{ return root == nullptr; }

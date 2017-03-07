@@ -25,32 +25,20 @@ bool BinarySearchTree<Comparable>::contains(const Comparable& target, BinaryNode
 	else
 		return true;
 }
-template<typename Comparable, typename Comparator = less<Comparable>>
-BinaryNode* BinarySearchTree<Comparable>::findmin(BinaryNode*t)
-{
-	if (t == nullptr)
-		return nullptr;
-	else if (t->left == nullptr)
-	{
-		return t;
-	}
-	else
-	{
-		return findmin(t->left);
-	}
-}
 
-template<typename Comparable, typename Comparator = less<Comparable>>
+template<typename Comparable>
 BinaryNode*
 BinarySearchTree<Comparable>::findmax(BinaryNode*t)
 {
-	if (t!=nullptr)
-		while (t->right!=nullptr)
+	if (t != nullptr)
+		while (t->right != nullptr)
 		{
 			t = t->right;
 		}
 	return t;
 }
+
+
 
 
 template<typename Comparable, typename Comparator = less<Comparable>>
