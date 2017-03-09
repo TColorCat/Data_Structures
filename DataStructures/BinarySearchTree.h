@@ -168,6 +168,8 @@ class BinarySearchTree
         
         BinaryNode( Comparable && theElement, BinaryNode *lt, BinaryNode *rt )
           : element{ std::move( theElement ) }, left{ lt }, right{ rt } { }
+
+		~BinaryNode(){};
     };
 
     BinaryNode *root;
@@ -206,7 +208,7 @@ class BinarySearchTree
         else if( t->element < x )
             insert( std::move( x ), t->right );
         else
-            ;  // Duplicate; do nothing
+            return;  // Duplicate; do nothing
     }
 
     /**
