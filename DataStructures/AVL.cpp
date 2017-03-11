@@ -1,7 +1,7 @@
 #include"stdafx.h"
 #include"AVL.h"
 
-namespace AVL
+namespace Data_structures
 {
 	/*
 	* 获取树的高度

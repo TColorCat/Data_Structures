@@ -1,6 +1,6 @@
 #ifndef AVL_H_
 #define AVL_H_
-namespace AVL
+namespace Data_structures
 {
 	template <class T>
 	class AVLTreeNode{
