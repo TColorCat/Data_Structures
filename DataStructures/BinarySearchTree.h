@@ -4,6 +4,7 @@
 #include "dsexceptions.h"
 #include <algorithm>
 #include<iostream>
+#include<vector>
 using namespace std;       
 namespace Data_structures
 {
@@ -22,25 +23,26 @@ namespace Data_structures
 	// void printTree( )      --> Print tree in sorted order
 	// ******************ERRORS********************************
 	// Throws UnderflowException as warranted
-	template <typename Comparable>
-	struct BinaryNode
-	{
-		Comparable element;
-		BinaryNode *left;
-		BinaryNode *right;
-
-		BinaryNode(const Comparable & theElement, BinaryNode *lt, BinaryNode *rt)
-			: element{ theElement }, left{ lt }, right{ rt } { }
-
-		BinaryNode(Comparable && theElement, BinaryNode *lt, BinaryNode *rt)
-			: element{ std::move(theElement) }, left{ lt }, right{ rt } { }
-
-		~BinaryNode(){};
-	};
+	//template <typename Comparable>
+	
 
 	template <typename Comparable>
 	class BinarySearchTree
 	{
+		struct BinaryNode
+		{
+			Comparable element;
+			BinaryNode *left;
+			BinaryNode *right;
+
+			BinaryNode(const Comparable & theElement, BinaryNode *lt, BinaryNode *rt)
+				: element{ theElement }, left{ lt }, right{ rt } { }
+
+			BinaryNode(Comparable && theElement, BinaryNode *lt, BinaryNode *rt)
+				: element{ std::move(theElement) }, left{ lt }, right{ rt } { }
+
+			~BinaryNode(){};
+		};
 	public:
 		BinarySearchTree() : root{ nullptr }
 		{
@@ -164,6 +166,10 @@ namespace Data_structures
 			insert(std::move(x), root);
 		}
 
+		void insert_loop(const Comparable&t)
+		{
+			insert_loop(t, root);
+		}
 		/**
 		* Remove x from the tree. Nothing is done if x is not found.
 		*/
@@ -186,7 +192,7 @@ namespace Data_structures
 
 		BinaryNode *root;
 		/*前序遍历*/
-		void prorder(BinaryNode<Comparable>*tree)const
+		void prorder(BinaryNode*tree)const
 		{
 			if (tree != nullptr)
 			{
@@ -196,7 +202,7 @@ namespace Data_structures
 			}
 		}
 		/*中序遍历*/
-		void miorder(BinaryNode<Comparable>*tree)const
+		void miorder(BinaryNode*tree)const
 		{
 			if (tree != nullptr)
 			{
@@ -207,7 +213,7 @@ namespace Data_structures
 			}
 		}
 		/*后序遍历*/
-		void posorder(BinaryNode<Comparable>*tree)const
+		void posorder(BinaryNode*tree)const
 		{
 			if (tree != nullptr)
 			{
@@ -218,6 +224,10 @@ namespace Data_structures
 				cout << tree->element << " ";
 			}
 		}
+
+		/*前驱与后驱*/
+
+
 		/**
 		* Internal method to insert into a subtree.
 		* x is the item to insert.
@@ -233,7 +243,7 @@ namespace Data_structures
 			else if (t->element < x)
 				insert(x, t->right);
 			else
-				;  // Duplicate; do nothing
+				return;  // Duplicate; do nothing
 		}
 
 		/**
@@ -253,7 +263,28 @@ namespace Data_structures
 			else
 				return;  // Duplicate; do nothing
 		}
+		/*循环版本的insert*/
+		void insert_loop(const Comparable& value, BinaryNode* &node)//这里是指针的引用，不是指针的指针
+		{
+			if (!node)
+				node = new BinaryNode{ value, nullptr, nullptr };
+			else
+			{
+				while (node->left&& node->right)
+				{
+					if (value < node->element)
+						node = node->right;
+					else if (value>node->element)
+						node = node->left;
+					else
+						return;//禁止相同的值
+				}
+				insert(value, node);
 
+
+			}
+
+		}
 		/**
 		* Internal method to remove from a subtree.
 		* x is the item to remove.
@@ -377,6 +408,24 @@ namespace Data_structures
 		}
 	};
 
+
+
+	namespace Test_demo
+	{
+	
+
+		void test_BinarySearch()
+		{
+			BinarySearchTree<int>tree;
+			std::vector<int>input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+			for (auto in : input)
+				tree.insert_loop (in);
+			tree.posorder();
+			cout << endl;
+			tree.prorder();
+			tree.printTree();
+		}
+	}
 }
 
 #endif
