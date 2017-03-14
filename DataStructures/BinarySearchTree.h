@@ -5,6 +5,7 @@
 #include <algorithm>
 #include<iostream>
 #include<vector>
+#include<stack>
 using namespace std;       
 namespace Data_structures
 {
@@ -183,10 +184,13 @@ namespace Data_structures
 		{
 			prorder(root);
 		}
-
+		void miorder_loop()
+		{
+			miorder_loop(root);
+		}
 		void miorder(){ miorder(root); }
 		void posorder(){ posorder(root); }
-
+		void posorder_loop(){ posorder_loop(root); }
 	private:
 
 
@@ -212,6 +216,31 @@ namespace Data_structures
 				miorder(tree->right);
 			}
 		}
+		/*中序遍历-循环方式
+		主要是模拟了进栈出栈的行为*/
+		void miorder_loop(BinaryNode*root)const
+		{
+			stack<BinaryNode*>room;
+			BinaryNode* pcurrent=root;
+			//room.push(pcurrent);
+			while (!room.empty()||pcurrent)
+			{
+				if (pcurrent)
+				{
+					room.push(pcurrent);
+					pcurrent = pcurrent->left;
+
+				}
+				else
+				{
+					BinaryNode* temp = room.top();
+					cout << temp->element << " ";
+					room.pop();
+					pcurrent = temp->right;//重要
+				}
+			}
+			
+		}
 		/*后序遍历*/
 		void posorder(BinaryNode*tree)const
 		{
@@ -224,7 +253,55 @@ namespace Data_structures
 				cout << tree->element << " ";
 			}
 		}
+		/*需要更多信息来确定是否有右子树*/
+		struct Node_r
+		{
+			BinaryNode*node;
+			bool revisted_right;
+			Node_r(BinaryNode* right, bool r) :node(right), revisted_right(r){};
+			~Node_r(){};
+		};
+		void posorder_loop(BinaryNode*root)const
+		{
+			BinaryNode* pcurrent = root;
+			stack<Node_r>room;
 
+			while (pcurrent!=nullptr)
+			{
+				room.push(Node_r(pcurrent, false));
+				pcurrent = pcurrent->left;
+			}
+
+			while (!room.empty() )
+			{
+				Node_r temp = room.top();
+				//注意，任意一个结点N，只要他有左孩子，则在N入栈之后，N的左孩子必然也跟着入栈了(这个体现在算法的后半部分)，
+				//所以当我们拿到栈顶元素的时候，可以确信这个元素要么没有左孩子，要么其左孩子已经被访问过，
+				//所以此时我们就不关心它的左孩子了，我们只关心其右孩子。
+				//若其右孩子已经被访问过，或是该元素没有右孩子，则由后序遍历的定义，此时可以visit这个结点了
+				if (temp.node->right == nullptr || temp.revisted_right)
+				{
+					cout << temp.node->element << " ";
+					room.pop();
+				}
+				else
+				{
+					room.pop();
+					temp.revisted_right = true;//修改右子树访问
+					room.push(temp);
+
+
+					BinaryNode*pcurren = temp.node->right;
+					while (pcurren!=nullptr)
+					{
+						room.push(Node_r(pcurren, false));
+						pcurren = pcurren->left;
+					}
+				}
+				
+
+			}
+		}
 		
 		/**
 		* Internal method to insert into a subtree.
@@ -436,13 +513,18 @@ namespace Data_structures
 		void test_BinarySearch()
 		{
 			BinarySearchTree<int>tree;
-			std::vector<int>input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+			std::vector<int>input = { 12,41, 62, 3, 94, 75, 6, 7, 8, 9, 10 };
+
+
 			for (auto in : input)
 				tree.insert_loop (in);
-			tree.posorder();
+			
+
+			tree.posorder_loop();
 			cout << endl;
-			tree.prorder();
-			tree.printTree();
+			tree.posorder();
+
+			
 		}
 	}
 }
