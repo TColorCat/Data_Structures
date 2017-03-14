@@ -225,9 +225,7 @@ namespace Data_structures
 			}
 		}
 
-		/*前驱与后驱*/
-
-
+		
 		/**
 		* Internal method to insert into a subtree.
 		* x is the item to insert.
@@ -394,6 +392,27 @@ namespace Data_structures
 				out << t->element << endl;
 				printTree(t->right, out);
 			}
+		}
+		/*前驱：左子树中的最大节点
+		后驱：右子树中的最小节点
+		*/
+		BinaryNode* predecessor(BinaryNode*root)
+		{
+			if (!root)
+				return nullptr;
+			else
+			{
+				if (root->left)
+					return findMax(root);
+				else
+				{
+
+				}
+			}
+
+			// 如果x没有左孩子。则x有以下两种可能：
+			// (01) x是"一个右孩子"，则"x的前驱结点"为 "它的父结点"。
+			// (01) x是"一个左孩子"，则查找"x的最低的父结点，并且该父结点要具有右孩子"，找到的这个"最低的父结点"就是"x的前驱结点"。
 		}
 
 		/**
