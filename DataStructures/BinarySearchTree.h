@@ -184,13 +184,17 @@ namespace Data_structures
 		{
 			prorder(root);
 		}
+		void prorder_loop(){ prorder_loop(root); }
+
 		void miorder_loop()
 		{
 			miorder_loop(root);
 		}
 		void miorder(){ miorder(root); }
+
 		void posorder(){ posorder(root); }
 		void posorder_loop(){ posorder_loop(root); }
+		void posorder_loop2(){ posorder_loop2(root); }
 	private:
 
 
@@ -204,6 +208,29 @@ namespace Data_structures
 				prorder(tree->left);
 				prorder(tree->right);
 			}
+		}
+		void prorder_loop(BinaryNode*root)const
+		{
+			stack<BinaryNode*> nodeStack;
+			vector<Comparable> result;
+			//base case
+			if (root == NULL)
+				return;// result;
+			nodeStack.push(root);
+			while (!nodeStack.empty())
+			{
+				BinaryNode* node = nodeStack.top();
+				result.push_back(node->element);
+				nodeStack.pop();
+				if (node->left)
+					nodeStack.push(node->left);
+				if (node->right)
+					nodeStack.push(node->right);
+			}
+			//reverse(result.begin(), result.end());
+			for (auto a : result)
+				cout << a << " ";
+
 		}
 		/*中序遍历*/
 		void miorder(BinaryNode*tree)const
@@ -290,7 +317,13 @@ namespace Data_structures
 					temp.revisted_right = true;//修改右子树访问
 					room.push(temp);
 
+					//若它的右孩子存在且rvisited为0，说明以前还没有动过它的右孩子，于是就去处理一下其右孩子。
+					
+						//此时我们要从其右孩子结点开始一直往左下方走，直至走到尽头，将这条路径上的所有结点都入栈。
 
+						//当然，入栈之前要先将该结点的rvisited设成1，因为其右孩子的入栈意味着它的右孩子必将先于它被访问
+						//(这很好理解，因为我们总是从栈顶取出元素来进行visit)。由此可知，下一次该元素再处于栈顶时，
+						//其右孩子必然已被visit过了，所以此处可以将rvisited设置为1。
 					BinaryNode*pcurren = temp.node->right;
 					while (pcurren!=nullptr)
 					{
@@ -301,6 +334,32 @@ namespace Data_structures
 				
 
 			}
+		}
+
+		void posorder_loop2(BinaryNode*root)const
+		{
+			stack<BinaryNode*> nodeStack;
+			vector<Comparable> result;
+			//base case
+			if (root == NULL)
+				return;// result;
+			nodeStack.push(root);
+			while (!nodeStack.empty())
+			{
+				BinaryNode* node = nodeStack.top();
+				result.push_back(node->element);
+				nodeStack.pop();
+				if (node->left)
+					nodeStack.push(node->left);
+				if (node->right)
+					nodeStack.push(node->right);
+			}
+
+			//前面就是在先序遍历
+			reverse(result.begin(), result.end());
+			for (auto a:result)
+				cout <<a << " ";
+
 		}
 		
 		/**
@@ -518,11 +577,26 @@ namespace Data_structures
 
 			for (auto in : input)
 				tree.insert_loop (in);
-			
 
+
+			cout << "midorder:" << endl;
+			tree.miorder();
+			cout << endl;
+			tree.miorder_loop();
+			cout << endl;
+
+			cout << "posorder" << endl;
+
+			tree.posorder_loop2();
+			cout << endl;
 			tree.posorder_loop();
 			cout << endl;
 			tree.posorder();
+			cout << endl;
+			cout << "prorder" << endl;
+			tree.prorder_loop();
+			cout << endl;
+			tree.prorder();
 
 			
 		}
