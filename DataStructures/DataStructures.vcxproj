@@ -81,14 +81,20 @@
   <ItemGroup>
     <ClInclude Include="AVL.h" />
     <ClInclude Include="BinarySearchTree.h" />
+    <ClInclude Include="Binary_Heap.h" />
     <ClInclude Include="dsexceptions.h" />
+    <ClInclude Include="Graph_Theory.h" />
+    <ClInclude Include="Redblack.h" />
     <ClInclude Include="Spary_tree.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AVL.cpp" />
+    <ClCompile Include="Binary_Heap.cpp" />
     <ClCompile Include="DataStructures.cpp" />
+    <ClCompile Include="Graph_Theory.cpp" />
+    <ClCompile Include="Redblack.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

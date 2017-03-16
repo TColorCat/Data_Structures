@@ -294,16 +294,17 @@ namespace Data_structures
 		N.left = N.right = NULL;
 		l = r = &N;
 
-		for (;;)
+		for (;;)//不停把对应的值向上提，知道遇到了找到的值，或者已经没有值了，才会跳出。
+				//虽然这样的做法，会导致一个平衡二叉树拉长，但也可以把非平衡的二叉树转变成平衡。
 		{
-			if (key < tree->key)
+			if (key < tree->key)//在左树上
 			{
 				if (tree->left == NULL)
 					break;
-				if (key < tree->left->key)
+				if (key < tree->left->key)//在左树的左树上
 				{
 					c = tree->left;                           /* rotate right */
-					tree->left = c->right;
+					tree->left = c->right;				//把左树推到根上
 					c->right = tree;
 					tree = c;
 					if (tree->left == NULL)
@@ -313,7 +314,7 @@ namespace Data_structures
 				r = tree;
 				tree = tree->left;
 			}
-			else if (key > tree->key)
+			else if (key > tree->key)//在右树上，相似的操作，相反的转向。
 			{
 				if (tree->right == NULL)
 					break;
