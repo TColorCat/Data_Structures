@@ -4,7 +4,8 @@
 
 #include<vector>
 #include<iostream>
-
+#include<map>
+#include<list>
 using namespace std;
 
 namespace Data_structures
@@ -15,17 +16,18 @@ namespace Data_structures
 	 
 	 是从起始点到结束点的路径*/
 	 template<typename T>
-	 class MatrixUDG {
+	 class Graph {
 	 private:
 		 
-		 vector<T> mVexs;    // 顶点集合
+		 map<int,T> mVexs;    // 顶点集合
 		 int mVexNum;             // 顶点数
 		 int mEdgNum;             // 边数
-		 vector<vector<T>> mMatrix;   // 邻接矩阵
+		 vector<vector<int>> mMatrix;   // 邻接矩阵
+		 map<T, list<T>> mlist;//链表表示法
 
 	 public:
 		 
-		 MatrixUDG() ;
+		 Graph() ;
 		 // 创建图(用已提供的矩阵)
 		 /*
 		 * 创建图(用已提供的矩阵)
@@ -36,57 +38,100 @@ namespace Data_structures
 		 *     edges -- 边数组
 		 *     elen  -- 边数组的长度
 		 */
-		 MatrixUDG(const vector<T>& vexs,const T edges[][2]);
-		 ~MatrixUDG();
+		 Graph(const vector<T>& vexs,const T edges[][2]);
+		 ~Graph();
 
 		 // 打印矩阵队列图
 		 void printt();
+
+		 
 
 	
 	 };
 
 	 
 
-	 template<class T>
-	 MatrixUDG<T>::MatrixUDG(){}
-	 template<class T>
-	 MatrixUDG<T>::~MatrixUDG(){}
-	 template<class T>
-	 MatrixUDG<T>::MatrixUDG(const vector<T>& vexs, const T edges[][2])
-		 :mVexs(vexs), mVexNum(vexs.size())
+	
 
+
+	 namespace Test_demo
 	 {
-					if(sizeof(edges) == 0 )
-						mEdgNum= 0 
-					else
-						mEdgNum= sizeof(edges) / sizeof(edges[0]); //([edges]()->int{return   })
-		 cout << sizeof(edges) << endl;
-		 cout <<  sizeof(edges[0]) << endl;
-
-		 cout << mEdgNum << endl;
-		 mMatrix = vector<vector<T>>(mVexNum, vector<T>(mVexNum, 0));
-
-		 for (int i = 0; i < mEdgNum; i++)
+		 void test_graph_martix()
 		 {
-			 mMatrix[edges[i][0]][edges[i][1]] = 1;
-			 mMatrix[edges[i][1]][edges[i][0]] = 1;
+			 vector<char> points = { 'a', 'b', 'c', 'd', 'e', 'f' };
+			 char edges[][2] = { { 'a', 'b' }, { 'c', 'd' } };
 
+			 Graph<char>test(points, edges);
+
+			 test.printt();
 		 }
 	 }
-
-	 template<class T>
-	 void MatrixUDG<T>::printt()
-	 {
-		 int i, j;
-
-		 cout << "Martix Graph:" << endl;
-		 for (i = 0; i < mVexNum; i++)
-		 {
-			 for (j = 0; j < mVexNum; j++)
-				 cout << mMatrix[i][j] << " ";
-			 cout << endl;
-		 }
-	 }
-
  }
+
+
+namespace Data_structures
+{
+	template<class T>
+	Graph<T>::Graph(){}
+	template<class T>
+	Graph<T>::~Graph(){}
+	template<class T>
+	Graph<T>::Graph(const vector<T>& vexs, const T edges[][2])
+		: mVexNum(vexs.size())
+
+	{
+
+		for (int i = 0; i < mVexNum; i++)
+		{
+			mVexs[vexs[i]] = i;
+			mlist[vexs[i]] = list<T>();//添加链表的 节点
+		}
+
+		if (sizeof(edges) == 0)
+			mEdgNum = 0;
+		else
+			mEdgNum = sizeof(edges) / sizeof(edges[0]); //([edges]()->int{return   })
+
+
+
+		mMatrix = vector<vector<int>>(mVexNum, vector<int>(mVexNum, 0));
+
+		for (int i = 0; i < mEdgNum; i++)
+		{
+			mMatrix[mVexs[edges[i][0]]][mVexs[edges[i][1]]] = 1;
+			mMatrix[mVexs[edges[i][1]]][mVexs[edges[i][0]]] = 1;
+			//链表记录法 无相图
+			mlist[edges[i][0]].push_back(edges[i][1]);
+
+
+		}
+
+
+
+	}
+
+	template<class T>
+	void Graph<T>::printt()
+	{
+		
+
+		cout << "Martix Graph:" << endl;
+		for (int i = 0; i < mVexNum; i++)
+		{
+			for (int j = 0; j < mVexNum; j++)
+				cout << mMatrix[i][j] << " ";
+			cout << endl;
+		}
+
+		
+		cout << "list Graph:" << endl;//这样才是图链表的正确表示方法。
+		for (const pair<T,list<T>> a : mlist)
+		{
+			for (auto it = a.second.begin(); it != a.second.end(); it++)
+				cout << " " << *it;
+				
+			cout << endl;
+		}
+	}
+}
  #endif
