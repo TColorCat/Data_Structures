@@ -53,17 +53,5 @@
     <ClCompile Include="DataStructures.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="AVL.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Redblack.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Binary_Heap.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Graph_Theory.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

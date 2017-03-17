@@ -90,11 +90,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AVL.cpp" />
-    <ClCompile Include="Binary_Heap.cpp" />
     <ClCompile Include="DataStructures.cpp" />
-    <ClCompile Include="Graph_Theory.cpp" />
-    <ClCompile Include="Redblack.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
