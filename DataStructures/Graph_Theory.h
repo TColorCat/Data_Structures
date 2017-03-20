@@ -7,6 +7,8 @@
 #include<map>
 #include<list>
 #include<queue>
+#include<set>
+//#include<algorithm>
 //#include<unordered_map>
 using namespace std;
 
@@ -71,6 +73,9 @@ namespace Data_structures
 		 void DFS();
 		 //拓扑排序
 		 void Toposort();
+
+		 //最小生成树 prim法
+		 Graph<T> prim(vector<graph_edges<T, int>>edges);
 		 // 打印矩阵队列图
 		 void printt();
 
@@ -115,17 +120,15 @@ namespace Data_structures
 		 void test_value_graph()
 		 {
 			 vector<char> points = { 'a', 'b', 'c', 'd', 'e', 'f', 'g' };
-			 vector<graph_edges<char, int>>edge = { { 'b', 'a' }, { 'b', 'd' }, { 'd', 'e' }
-			 , { 'd', 'f' }, { 'a', 'g' }, { 'c', 'g' }, { 'c', 'f' } };
-			 Graph<char>test(points, edge,  true);
+			 vector<graph_edges<char, int>>edge = { { 'b', 'a' ,1}, { 'b', 'd',3 }, { 'd', 'e' ,6}
+			 , { 'd', 'f',10 }, { 'a', 'g' ,9}, { 'c', 'g' ,7}, { 'c', 'f' ,5} };
+			 Graph<char>test(points, edge,  false);
 			 test.printt();
 			 cout << endl;
 
-			 test.BFS();
-			 cout << endl;
-			 test.DFS();
-			 cout << endl;
-			 test.Toposort();
+			 Graph<char>name = test.prim(edge);
+				 name.printt();
+
 		 }
 	 }
  }
@@ -392,6 +395,41 @@ namespace Data_structures
 		cout << endl;
 		
 	}
+
+	template<class T>
+	Graph<T> Graph<T>::prim(vector<graph_edges<T, int>>edges)
+	{
+		vector<graph_edges<T, int>>result;
+		//function<bool, const graph_edges<T, int>& , const graph_edges<T, int>&> cmp=
+			
+		sort(edges.begin(), edges.end(),
+			[](const graph_edges<T, int>& a, const graph_edges<T, int>& b){return a.value <= b.value; }	
+		);
+
+		set<T>finded_point;
+		vector<T>points;
+		for (int i = 0; i < mEdgNum; ++i)
+		{
+			if (!(
+				finded_point.find(edges[i].begin)!=finded_point.end() 
+				&& finded_point.find(edges[i].end)!=finded_point.end()
+				))//使用set本身的特性，自动滤出重复的元素
+			{
+				finded_point.insert(edges[i].begin);
+				finded_point.insert(edges[i].end);
+				points.push_back(edges[i].begin);
+				points.push_back(edges[i].end);
+				result.push_back(edges[i]);
+			}
+
+		}
+		Graph<T>name(points, result, false);
+		
+		return name;
+		
+		
+	}
+
 	template<class T>
 	void Graph<T>::printt()
 	{
