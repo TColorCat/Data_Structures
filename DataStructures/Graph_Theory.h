@@ -12,7 +12,16 @@ using namespace std;
 
 namespace Data_structures
  { 
+	 template<typename P,typename Q>
+	 struct graph_edges
+	 {
+		 P begin;
+		 P end;
+		 Q value;
 
+		 graph_edges(P be, P ed, Q val=1) :begin(be), end(ed), value(val){}
+
+	 };
 	 //图的基本表示方法:矩阵法与链表法
 	 /*输入是各个节点 
 	 
@@ -49,7 +58,9 @@ namespace Data_structures
 		 *     edges -- 边数组
 		 *     elen  -- 边数组的长度
 		 */
-		 Graph(const vector<T>& vexs,const T edges[][2],const bool& direction);
+		 Graph(const vector<T>& vexs, const T edges[][2], const int &number_edge,const bool& direction);
+		 /*权值value要求必须大于0 ，否则视为不通*/
+		 Graph(const vector<T>& vexs, const vector<graph_edges<T,int>>&edges, const bool& direction);
 		 ~Graph();
 
 
@@ -58,6 +69,8 @@ namespace Data_structures
 		 void BFS();
 		 //图的深度优先遍历
 		 void DFS();
+		 //拓扑排序
+		 void Toposort();
 		 // 打印矩阵队列图
 		 void printt();
 
@@ -75,18 +88,44 @@ namespace Data_structures
 	 {
 		 void test_graph_martix()
 		 {
-			 vector<char> points = { 'a', 'b', 'c', 'd', 'e', 'f' };
-			 char edges[][2] = { { 'a', 'b' }, { 'c', 'd' }, {'e','f'} };
+			 vector<char> points = { 'a', 'b', 'c', 'd', 'e', 'f','g' };
+			 char edges[][2] = { { 'b', 'a' }, { 'b', 'd' }, {'d','e'}
+			 , { 'd', 'f' }, { 'a', 'g' }, { 'c', 'g' }, {'c','f'} };
+			 int length;
+			 if (sizeof(edges) == 0)
+				length = 0;
+			 else
+				 length = sizeof(edges)/sizeof(edges[0]); //([edges]()->int{return   })
+			 //因为传入的数组是个指针，而且怎么也变不回原来的数组，所以只能出此下策
+			
 
-			 Graph<char>test(points, edges,false);
+			 Graph<char>test(points, edges,length,true);
 
 			 test.printt();
 
 			 cout << endl;
+
 			 test.BFS();
 			 cout << endl;
 			 test.DFS();
+			 cout << endl;
+			 test.Toposort();
+		 }
 
+		 void test_value_graph()
+		 {
+			 vector<char> points = { 'a', 'b', 'c', 'd', 'e', 'f', 'g' };
+			 vector<graph_edges<char, int>>edge = { { 'b', 'a' }, { 'b', 'd' }, { 'd', 'e' }
+			 , { 'd', 'f' }, { 'a', 'g' }, { 'c', 'g' }, { 'c', 'f' } };
+			 Graph<char>test(points, edge,  true);
+			 test.printt();
+			 cout << endl;
+
+			 test.BFS();
+			 cout << endl;
+			 test.DFS();
+			 cout << endl;
+			 test.Toposort();
 		 }
 	 }
  }
@@ -99,8 +138,8 @@ namespace Data_structures
 	template<class T>
 	Graph<T>::~Graph(){}
 	template<class T>
-	Graph<T>::Graph(const vector<T>& vexs, const T edges[][2],const bool& direction)
-		: mVexNum(vexs.size())
+	Graph<T>::Graph(const vector<T>& vexs, const T edges[][2], const int &number_edge, const bool& direction)
+		: mVexNum(vexs.size()), mEdgNum(number_edge)
 
 	{
 
@@ -111,10 +150,7 @@ namespace Data_structures
 			visted_log[vexs[i]] = false;
 		}
 
-		if (sizeof(edges) == 0)
-			mEdgNum = 0;
-		else
-			mEdgNum = sizeof(edges) / sizeof(edges[0]); //([edges]()->int{return   })
+		
 
 
 
@@ -127,18 +163,56 @@ namespace Data_structures
 
 			//链表记录法 有相图
 			mlist[edges[i][0]].push_back(edges[i][1]);
-			if (!direction)//无相图
+			if(!direction)//无相图
 			{
 				mMatrix[mVexs[edges[i][1]]][mVexs[edges[i][0]]] = 1;
 				mlist[edges[i][1]].push_back(edges[i][0]);
 			}
 				
-			
-
-
 		}
 
 
+
+	}
+	template<class T>
+	Graph<T>::Graph(const vector<T>& vexs, const vector<graph_edges<T, int>>&edge,const bool& direction)
+		:mVexNum(vexs.size()), mEdgNum(edge.size())
+	{
+
+		for (int i = 0; i < mVexNum; i++)
+		{
+			mVexs[vexs[i]] = i;
+			mlist[vexs[i]] = list<T>();//添加链表的 节点
+			visted_log[vexs[i]] = false;
+		}
+
+
+
+
+
+		mMatrix = vector<vector<int>>(mVexNum, vector<int>(mVexNum, 0));
+
+		for (int i = 0; i < mEdgNum; i++)
+		{
+			//矩阵记录法
+			graph_edges<T, int>temp = edge[i];
+			if (temp.value == 0)
+			{
+				cout << "wrong has zero " << endl;
+				break;
+			}
+
+			
+
+			//链表记录法 有相图
+			mlist[temp.begin].push_back(temp.end);
+			if (!direction)//无相图
+			{
+				mMatrix[mVexs.at(temp.end)][mVexs.at(temp.begin)] = temp.value;
+				mlist[temp.end].push_back(temp.begin);
+			}
+			mMatrix[mVexs.at(temp.begin)][mVexs.at(temp.end)] = temp.value;
+		}
 
 	}
 	template<class T>
@@ -266,6 +340,57 @@ namespace Data_structures
 			}
 		} 
 
+	}
+
+	template<class T>
+	void Graph<T>::Toposort()
+	{
+		queue<T>room;
+		vector<T>result;
+		vector<int>input_number(mVexNum, 0);
+
+
+		int i = 0;
+		for (const pair<T, int> a : mVexs)
+		{
+
+			
+			int number = 0;
+			for (int j = 0; j < mVexNum; j++)
+			{
+				if (mMatrix[j][i] != 0)
+					++number;
+				
+			}
+			input_number[a.second] = number;//初始化入图。
+			if (number==0)
+				room.push(a.first);
+
+			++i;
+			
+		}//更新源点
+
+		while (!room.empty())
+		{
+			T node = room.front();
+			room.pop();
+			result.push_back(node);
+
+			list<T>nodes = mlist.at(node);
+			for (const T neb : nodes)
+			{
+				--input_number[mVexs.at(neb)];
+				if (input_number[mVexs.at(neb)]==0)//出问题的地方；粗心是表象，以后遇到判断，把判断式写出来，又不会占用什么，或者到完成阶段任务之后，再把判断语句化简
+					room.push(neb);
+			}
+		}
+
+		//输出 阶段
+		for (auto a : result)
+			cout << a << "->";
+
+		cout << endl;
+		
 	}
 	template<class T>
 	void Graph<T>::printt()
