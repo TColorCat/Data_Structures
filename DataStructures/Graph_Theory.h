@@ -8,6 +8,7 @@
 #include<list>
 #include<queue>
 #include<set>
+#include<functional>
 //#include<algorithm>
 //#include<unordered_map>
 using namespace std;
@@ -47,6 +48,8 @@ namespace Data_structures
 
 		 void reset();//重置访问图
 		 bool all_visted(T& next_point);//看看是否所有的点都访问了，用于非连通图，如果有没有访问到的，就返回这个点。
+
+		 bool Kruskal_loop(vector<graph_edges<T, int>>&find, graph_edges<T, int>&now_edge);
 	 public:
 		 
 		 Graph() ;
@@ -63,19 +66,25 @@ namespace Data_structures
 		 Graph(const vector<T>& vexs, const T edges[][2], const int &number_edge,const bool& direction);
 		 /*权值value要求必须大于0 ，否则视为不通*/
 		 Graph(const vector<T>& vexs, const vector<graph_edges<T,int>>&edges, const bool& direction);
+		 //另一 种仅仅需要边的集合的权值图
+		 Graph(const vector<graph_edges<T, int>>&edges, const bool& direction=false);
+
+
 		 ~Graph();
 
 
 
 		 //图的广度优先遍历
-		 void BFS();
+		 vector<vector<T>> BFS();
 		 //图的深度优先遍历
 		 void DFS();
 		 //拓扑排序
 		 void Toposort();
 
 		 //最小生成树 prim法
-		 Graph<T> prim(vector<graph_edges<T, int>>edges);
+		 Graph<T> prim();
+
+		 Graph<T>Kruskal(vector<graph_edges<T, int>>&edge);
 		 // 打印矩阵队列图
 		 void printt();
 
@@ -109,7 +118,7 @@ namespace Data_structures
 			 test.printt();
 
 			 cout << endl;
-
+			 vector<vector<char>>forest;
 			 test.BFS();
 			 cout << endl;
 			 test.DFS();
@@ -120,15 +129,22 @@ namespace Data_structures
 		 void test_value_graph()
 		 {
 			 vector<char> points = { 'a', 'b', 'c', 'd', 'e', 'f', 'g' };
-			 vector<graph_edges<char, int>>edge = { { 'b', 'a' ,1}, { 'b', 'd',3 }, { 'd', 'e' ,6}
-			 , { 'd', 'f',10 }, { 'a', 'g' ,9}, { 'c', 'g' ,7}, { 'c', 'f' ,5} };
+			 vector<graph_edges<char, int>>edge = { { 'a', 'b' ,12}, { 'b', 'c',10 }, { 'd', 'e' ,4}
+			 , { 'c', 'd',3 }, { 'c', 'e' ,5}, { 'c', 'f' ,6}, { 'a', 'g' ,14}
+			 , { 'a', 'f', 16 }, { 'b', 'f', 7 }, { 'g', 'f', 9 }, { 'e', 'f', 2 }
+			 , { 'e', 'g', 8 } };
 			 Graph<char>test(points, edge,  false);
+
 			 test.printt();
-			 cout << endl;
+			 cout << "prim" << endl;
+			 Graph<char>name = test.prim();
+			 name.printt();
 
-			 Graph<char>name = test.prim(edge);
-				 name.printt();
 
+
+			 cout << "kruskal" << endl;
+			 Graph<char>namet = test.Kruskal(edge);
+			 namet.printt();
 		 }
 	 }
  }
@@ -219,6 +235,73 @@ namespace Data_structures
 
 	}
 	template<class T>
+	Graph<T>::Graph(const vector<graph_edges<T, int>>&edge, const bool& direction)
+		: mEdgNum(edge.size())
+	{
+		//mvexnum MVEX
+		int point_count=0;
+		for (int i = 0; i < mEdgNum; i++)
+		{
+
+			graph_edges<T, int>temp = edge[i];
+			if (temp.value == 0)
+			{
+				cout << "wrong has zero " << endl;
+				break;
+			}
+			else
+			{
+				if (mVexs.find(temp.begin) == mVexs.end())
+				{
+					mVexs[temp.begin] = point_count;
+					visted_log[temp.begin] = false;
+					++point_count;
+				}
+				if (mVexs.find(temp.end) == mVexs.end())
+				{
+					mVexs[temp.end] = point_count;
+					visted_log[temp.end] = false;
+					++point_count;
+				}
+
+				//链表记录法 有相图
+				mlist[temp.begin].push_back(temp.end);
+				if (!direction)//无相图
+				{
+
+					mlist[temp.end].push_back(temp.begin);
+				}
+
+			}
+
+		}
+		mVexNum = point_count;
+		mMatrix = vector<vector<int>>(mVexNum, vector<int>(mVexNum, 0));
+
+		for (int i = 0; i < mEdgNum; i++)
+		{
+			
+			graph_edges<T, int>temp = edge[i];
+			if (temp.value == 0)
+			{
+				cout << "wrong has zero " << endl;
+				break;
+			}
+
+
+			//矩阵记录法
+			mMatrix[mVexs.at(temp.begin)][mVexs.at(temp.end)] = temp.value;
+		
+			if (!direction)//无相图
+			{
+				mMatrix[mVexs.at(temp.end)][mVexs.at(temp.begin)] = temp.value;
+				
+			}
+			
+		}
+
+	}
+	template<class T>
 	void Graph<T>::reset()
 	{
 		for (map<T, bool>::iterator it = visted_log.begin(); it != visted_log.end(); ++it)
@@ -267,15 +350,16 @@ namespace Data_structures
 		
 	}
 	template<class T>
-	void Graph<T>::BFS()//使用mlist表示法
+	vector<vector<T>> Graph<T>::BFS()//使用mlist表示法来完成整个函数
 	{
 		queue<T>room_next;
+		vector<vector<T>>forest;
 		
 		reset();//重置
 		T begin;
 		while(!all_visted(begin))//这是为了避免非连通图的影响。
 		{
-			
+			vector<T>tree;
 			room_next.push(begin);
 			while (!room_next.empty())
 			{
@@ -298,10 +382,14 @@ namespace Data_structures
 				//当然也可以把 T当做一个指针类型，其指向其他数据庞大的节点，这样也就不需要考虑什么复制或者引用的范围了
 				//但是这样对于unique_ptr是不成立的。就算是这样，在输入的时候，可以创建一个两级的指针索引
 				//不过输入的 时候肯定是我们先做好安排，所以这个不用担心。
-				cout << temp << "-->";
-			}
-		} 
+				tree.push_back(temp);
 
+				//cout << temp << "-->";
+			}
+
+			forest.push_back(tree);
+		} 
+		return forest;
 	}
 
 	template<class T>
@@ -397,54 +485,186 @@ namespace Data_structures
 	}
 
 	template<class T>
-	Graph<T> Graph<T>::prim(vector<graph_edges<T, int>>edges)
+	Graph<T> Graph<T>::prim()
 	{
 		vector<graph_edges<T, int>>result;
-		//function<bool, const graph_edges<T, int>& , const graph_edges<T, int>&> cmp=
-			
-		sort(edges.begin(), edges.end(),
-			[](const graph_edges<T, int>& a, const graph_edges<T, int>& b){return a.value <= b.value; }	
-		);
 
+		//avoide no edge
+		if (mEdgNum==0)
+			return Graph<T>();//
+
+	
+
+	
 		set<T>finded_point;
 		vector<T>points;
-		for (int i = 0; i < mEdgNum; ++i)
+		//先期准备
+		
+		
+		/*
+
+		设图G顶点集合为U，首先任意选择图G中的一点作为起始点a，将该点加入集合V，
+		再从集合U-V中找到另一点b使得点b到V中任意一点的权值最小，此时将b点也加入集合V；
+
+		所以判断的时候，就要比较很多才行。
+		然后挪动到下一个点
+		直到寻找到全部的点为止
+		那这样的话，实际上不需要输入的边的数据，只需要链表与矩阵表示法就可以了。在这里虽然两个方法都用的原因是链表表示法里面没有加权*/
+
+		const pair<T, int>ntemp =*(mVexs.begin());
+
+		finded_point.insert(ntemp.first);//塞进第一个点
+		points.push_back(ntemp.first);
+
+		while (finded_point.size()!=mVexNum)//因为size()是无符号数
 		{
-			if (!(
-				finded_point.find(edges[i].begin)!=finded_point.end() 
-				&& finded_point.find(edges[i].end)!=finded_point.end()
-				))//使用set本身的特性，自动滤出重复的元素
+			//假设首个字母已经成功加入了,下面就是使用mMartix来检查那个点到这个点最小
+			T begin_point=0;//这个就是为了容易记录边
+			T next_point=0;
+			int power = 0;
+			for (const pair<T,int> finding:mVexs)
 			{
-				finded_point.insert(edges[i].begin);
-				finded_point.insert(edges[i].end);
-				points.push_back(edges[i].begin);
-				points.push_back(edges[i].end);
-				result.push_back(edges[i]);
+			
+				if (finded_point.find(finding.first) == finded_point.end())//只有还没有访问到的点才能判断，这样为了防止重复查找，而且节约了时间
+				{
+					for (T a : finded_point)//已经找到的点，其他的点finding需要对已经找到的点进行搜索，找最小的边，相对应的点就是下一个点。
+					{
+						int temp_power = mMatrix[finding.second][mVexs.at(a)];
+						if (temp_power != 0)//需要是连同的边
+						{
+							if (power == 0)
+							{
+								power = temp_power;
+								next_point = finding.first;
+								begin_point = a;
+								//这里的错误在与，没有考虑到如果一开始就是最优解的情况，当时下意识排除掉了最优解是第一个的可能性。
+								//所以以后考虑的时候，第一个也是会有最优解的。
+							}
+							else
+							{
+								if (temp_power<power)//发现了权更小的边
+								{
+									power = temp_power;
+									next_point = finding.first;
+									begin_point = a;
+								}
+							}
+						}
+
+					}
+				}
+
+			}
+
+			if (power != 0)//这是为了防止错误。这时出现power=0的情况说明有孤立点的存在
+			{//以上两个for循环之后，得到的next_point与power就是下一个点，以及两点之间的边的权值。
+				finded_point.insert(next_point);
+				points.push_back(next_point);
+				result.push_back(graph_edges<T,int>(begin_point, next_point, power));
+			}
+			else
+			{
+				cout << "has single point" << endl;
+				break;
 			}
 
 		}
+		
+
 		Graph<T>name(points, result, false);
 		
 		return name;
 		
 		
 	}
+	template<class T>
+	bool Graph<T>::Kruskal_loop(vector<graph_edges<T, int>>&find_edges,graph_edges<T,int>&now_edge)
+	{
+		/*是判断两个边的点的终点是否相同，如果不同说明不会构成回路，终点就是点值最大*/
 
+		if (find_edges.empty())
+			return false;
+		else
+		{
+			T nbegin = now_edge.begin;
+			T nend = now_edge.end;
+			Graph<T> temp_g(find_edges, false);
+
+			vector<vector<T>>forest=temp_g.BFS();//使用BFS来产生一个搜索树
+			
+			for (auto a : forest)//检查是否在一个旁支上
+			{
+				bool be = false;
+				bool ed = false;
+				for (auto b : a)
+				{
+					if (nbegin == b)
+						be = true;
+					if (nend == b)
+						ed = true;
+				}
+
+				if (be&&ed)
+					return true;
+			}
+			return false;
+
+		}
+	}
+	template<class T>
+	Graph<T> Graph<T>::Kruskal(vector<graph_edges<T, int>>&edge)
+	{
+		if (edge.empty())return Graph<T>();
+
+		/*想要加一个边时，首先检测这个边的两个点是否是有着相同的最大点，如果是，则说明是回路*/
+		sort(edge.begin(), edge.end(),
+			[](const graph_edges<T, int>&a, const graph_edges<T, int>&b){return a.value < b.value; });
+		//vector<T>finded_point;
+		vector<graph_edges<T, int>>result;
+		//int count = 0;
+
+		for (int i = 0; i < mEdgNum; i++)
+		{
+			
+
+			if (!Kruskal_loop(result,edge[i]) )
+			{
+				//count++;
+				result.push_back(edge[i]);
+			}
+		}
+
+		Graph<T> name(result);
+		return name;
+	}
 	template<class T>
 	void Graph<T>::printt()
 	{
 		
 		
 		cout << "Martix Graph:" << endl;
-		int i = 0;
-		for (const pair<T, int> a : mVexs)
+		cout << "	";
+		for (int i = 0; i < mVexNum; i++)
 		{
-			
-			cout << a.first << "|  ";
+			for (const pair<T, int> a : mVexs)
+				if (a.second == i)
+					cout << a.first << "	";
+
+		
+
+		
+		}
+		cout << endl;
+		for (int i = 0; i < mVexNum;i++)
+		{
+			for (const pair<T, int> a : mVexs)
+				if (a.second == i)
+					cout << a.first << "	";
+		
 			for (int j = 0; j < mVexNum; j++)
-				cout << mMatrix[i][j] << " ";
+				cout << mMatrix[i][j] <<"	";
 			cout << endl;
-			++i;
+	
 		}
 		
 		cout << "list Graph:" << endl;//这样才是图链表的正确表示方法。

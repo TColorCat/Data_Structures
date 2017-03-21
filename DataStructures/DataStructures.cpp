@@ -16,7 +16,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	
 	
-	Test_demo::test_graph_martix();
+	//Test_demo::test_graph_martix();
 	cout << endl;
 	Test_demo::test_value_graph();
 	
