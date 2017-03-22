@@ -723,16 +723,18 @@ namespace Data_structures
 			int rule=INT_MAX;
 			for (T nextp : mlist.at(begin))
 			{
-				if (!U_table.at(nextp).finall)
+				if (!U_table.at(nextp).finall)//用来确定这个点是否已经访问并加入了解点集中。因为是无相图。
 				{
 					if (U_table.at(nextp).PowerValue == -1 ||
 						U_table.at(nextp).PowerValue > (mMatrix[mVexs.at(begin)][mVexs.at(nextp)] + temp.PowerValue)
 						)
 					{
+						//更新最后权值
 						U_table.at(nextp).PowerValue = mMatrix[mVexs.at(begin)][mVexs.at(nextp)] + temp.PowerValue;
+						//复制begin的路径
 						list<T>().swap(U_table.at(nextp).road);
 						for (T begin_road : result.at(begin).road)
-							U_table.at(nextp).road.push_back(begin_road);//复制begin的路径
+							U_table.at(nextp).road.push_back(begin_road);
 
 						U_table.at(nextp).road.push_back(nextp);
 
@@ -751,7 +753,7 @@ namespace Data_structures
 
 			}
 			
-
+			if (rule == INT_MAX)break;//防止出现非连通图的情况
 			begin = NextPoint;
 		}
 
@@ -769,8 +771,6 @@ namespace Data_structures
 			for (const pair<T, int> a : mVexs)
 				if (a.second == i)
 					cout << a.first << "	";
-
-		
 
 		
 		}
