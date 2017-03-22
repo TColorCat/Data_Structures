@@ -25,6 +25,32 @@ namespace Data_structures
 		 graph_edges(P be, P ed, Q val=1) :begin(be), end(ed), value(val){}
 
 	 };
+
+	 //从源点到某个点的最短路径的结果结构
+	 //T EndPoint;//终点，也是标志，源点，就放在list的路径中了。
+	 //int PowerValue;//源点到终点的权值 默认值是-1，说明对于源点来说，并没有
+	 //list<T> road;//源点到终点的路径，包含源点和终点
+	 //bool finally;//标志是否已经结束了从源点到终点的过程，用于在原地分割U,S这两个集合
+	 template<typename T>
+	 struct ShortestRoad
+	 {
+		 T EndPoint;//终点，也是标志，源点，就放在list的路径中了。
+		 int PowerValue;//源点到终点的权值 默认值是-1，说明对于源点来说，并没有
+		 list<T> road;//源点到终点的路径，包含源点和终点
+		 bool finall;//标志是否已经结束了从源点到终点的过程，用于在原地分割U,S这两个集合
+		 ShortestRoad(const T& begin, const T&end, const int&power = -1)
+			 :EndPoint(end), PowerValue(power), finall(begin == end)
+		 {
+			 if (begin == end)
+			 {
+				 road.push_back(begin);
+
+				 PowerValue = 0;
+			 }
+		 }
+
+		 ~ShortestRoad(){}
+	 };
 	 //图的基本表示方法:矩阵法与链表法
 	 /*输入是各个节点 
 	 
@@ -83,8 +109,16 @@ namespace Data_structures
 
 		 //最小生成树 prim法
 		 Graph<T> prim();
-
+			//	Kruskal法
 		 Graph<T>Kruskal(vector<graph_edges<T, int>>&edge);
+
+
+		 //单源最短路径算法
+	 
+		 
+	 public:
+		 //Dijkstra法
+		 map<T,ShortestRoad<T>> Dijkstra(const T& begin);
 		 // 打印矩阵队列图
 		 void printt();
 
@@ -145,6 +179,22 @@ namespace Data_structures
 			 cout << "kruskal" << endl;
 			 Graph<char>namet = test.Kruskal(edge);
 			 namet.printt();
+		 }
+
+		 void ShortestValue()
+		 {
+			 vector<char> points = { 'a', 'b', 'c', 'd', 'e', 'f', 'g' };
+			 vector<graph_edges<char, int>>edge = { { 'a', 'b', 12 }, { 'b', 'c', 10 }, { 'd', 'e', 4 }
+				 , { 'c', 'd', 3 }, { 'c', 'e', 5 }, { 'c', 'f', 6 }, { 'a', 'g', 14 }
+				 , { 'a', 'f', 16 }, { 'b', 'f', 7 }, { 'g', 'f', 9 }, { 'e', 'f', 2 }
+			 , { 'e', 'g', 8 } };
+			 Graph<char>test(points, edge, false);
+
+			 test.printt();
+			 
+			 auto temp=test.Dijkstra('a');
+
+			 int a = 0;
 		 }
 	 }
  }
@@ -636,6 +686,76 @@ namespace Data_structures
 
 		Graph<T> name(result);
 		return name;
+	}
+
+	template<class T>
+	map<T,ShortestRoad<T>> Graph<T>::Dijkstra(const T& sbegin)
+	{
+		map<T,ShortestRoad<T>> result;//先用list实现，考虑到删除的次数很多，所以很方便
+		map<T,ShortestRoad<T>> U_table;
+		T begin = sbegin;
+		//先初始化U集合
+		for (const pair<T, int> point : mVexs)
+		{
+			ShortestRoad<T> temp(begin, point.first);
+			U_table.insert(make_pair(point.first, temp));
+		
+		}
+
+		
+		T NextPoint;
+		while (result.size() != mVexNum)
+		{
+			
+				//遍历起始点的下一个点，找到与begin连同的点后，更新该点的权值，
+				//更新该点的rode的路径（把源点的road复制过来，然后加上自己这个点）为了顺应这个思想，只把起始点的road写值
+				//找到与begin连通的点中，权值最小的点当做下一个begin点
+				//如果从新begin点到end，与从旧begin点到end相比，路径更短，就更新end的权值，更新end的路径（复制新begin点的list，抛弃旧的，然后加上自己的）
+			auto itb = U_table.find(begin);
+			
+			if (itb == U_table.end())return result;//并没有这个点
+			itb->second.finall = true;
+			ShortestRoad<T> temp = U_table.at(begin);
+			result.insert(*itb);//先插入源点到结果中
+			
+
+			
+			int rule=INT_MAX;
+			for (T nextp : mlist.at(begin))
+			{
+				if (!U_table.at(nextp).finall)
+				{
+					if (U_table.at(nextp).PowerValue == -1 ||
+						U_table.at(nextp).PowerValue > (mMatrix[mVexs.at(begin)][mVexs.at(nextp)] + temp.PowerValue)
+						)
+					{
+						U_table.at(nextp).PowerValue = mMatrix[mVexs.at(begin)][mVexs.at(nextp)] + temp.PowerValue;
+						list<T>().swap(U_table.at(nextp).road);
+						for (T begin_road : result.at(begin).road)
+							U_table.at(nextp).road.push_back(begin_road);//复制begin的路径
+
+						U_table.at(nextp).road.push_back(nextp);
+
+					}
+
+					if (U_table.at(nextp).PowerValue < rule)
+					{
+						NextPoint = nextp;
+						rule = U_table.at(nextp).PowerValue;
+
+					}
+
+					
+				}
+				
+
+			}
+			
+
+			begin = NextPoint;
+		}
+
+		return result;
 	}
 	template<class T>
 	void Graph<T>::printt()
