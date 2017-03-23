@@ -97,6 +97,8 @@ namespace Data_structures
 
 
 		 ~Graph();
+		 //顾名思义，就是专用于添加额外的边
+		 bool addedge(const graph_edges<T,int>& edge,const bool& direction = false);
 
 
 
@@ -114,9 +116,6 @@ namespace Data_structures
 
 
 		 //单源最短路径算法
-	 
-		 
-	 public:
 		 //Dijkstra法
 		 map<T,ShortestRoad<T>> Dijkstra(const T& begin);
 		 // 打印矩阵队列图
@@ -189,12 +188,13 @@ namespace Data_structures
 				 , { 'a', 'f', 16 }, { 'b', 'f', 7 }, { 'g', 'f', 9 }, { 'e', 'f', 2 }
 			 , { 'e', 'g', 8 } };
 			 Graph<char>test(points, edge, false);
-
+			 graph_edges<char, int>new_edge = { 'z', 'a', 20 };
+			 test.addedge(new_edge,false);
 			 test.printt();
 			 
-			 auto temp=test.Dijkstra('a');
+			// auto temp=test.Dijkstra('a');
 
-			 int a = 0;
+			 //int a = 0;
 		 }
 	 }
  }
@@ -351,6 +351,90 @@ namespace Data_structures
 		}
 
 	}
+	template<class T>
+	bool Graph<T>::addedge(const graph_edges<T,int>&edge,const bool& direction)
+	{
+		//先查前后两点是否已经在map中
+		//对于都在map中的情况
+		auto be = mVexs.find(edge.begin);
+		auto ed = mVexs.find(edge.end);
+	
+		if (
+			(be != mVexs.end()) && 
+			(ed!= mVexs.end())
+			)
+		{
+			if (mMatrix[mVexs.at(edge.begin)][mVexs.at(edge.end)] != 0)
+			{
+				cout << "had the edge" << endl;
+				return false;
+			}
+			else
+			{
+				mMatrix[mVexs.at(edge.begin)][mVexs.at(edge.end)] = edge.value;
+				return true;
+			}
+
+		}
+		else
+		{
+			if (be == mVexs.end())
+			{
+				mVexs.insert(make_pair(edge.begin, mVexNum++));
+				//增添list目录
+				mlist.insert(make_pair(edge.begin, list<T>()));
+				
+			
+				//更改矩阵大小
+				for (auto it = mMatrix.begin(); it != mMatrix.end(); ++it)
+				{
+					
+					it->push_back(0);
+
+				}
+				vector<int>temp(mVexNum, 0);
+				mMatrix.push_back(temp);
+
+
+			}
+			if (ed == mVexs.end())
+			{
+				mVexs.insert(make_pair(edge.end, mVexNum++));
+				//更改liist目录
+				mlist.insert(make_pair(edge.end, list<T>()));
+				
+
+				//更改矩阵大小
+				for (auto it = mMatrix.begin(); it != mMatrix.end(); ++it)
+				{
+
+					it->push_back(0);
+
+				}
+				vector<int>temp(mVexNum, 0);
+				mMatrix.push_back(temp);
+
+
+			}
+
+
+			//更新矩阵与列表目录
+			mMatrix[mVexs.at(edge.begin)][mVexs.at(edge.end)] = edge.value;
+			mlist[edge.begin].push_back(edge.end);
+			if (!direction)
+			{
+				mMatrix[mVexs.at(edge.end)][mVexs.at(edge.begin)] = edge.value;
+				mlist[edge.end].push_back(edge.begin);
+			}
+			//最后再增加边的数目与点的数目
+			++mEdgNum;
+			return true;
+		}
+
+
+		
+	}
+
 	template<class T>
 	void Graph<T>::reset()
 	{
