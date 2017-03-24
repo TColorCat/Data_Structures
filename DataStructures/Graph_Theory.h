@@ -9,6 +9,7 @@
 #include<queue>
 #include<set>
 #include<functional>
+
 //#include<algorithm>
 //#include<unordered_map>
 using namespace std;
@@ -38,7 +39,7 @@ namespace Data_structures
 		 int PowerValue;//源点到终点的权值 默认值是-1，说明对于源点来说，并没有
 		 list<T> road;//源点到终点的路径，包含源点和终点
 		 bool finall;//标志是否已经结束了从源点到终点的过程，用于在原地分割U,S这两个集合
-		 ShortestRoad(const T& begin, const T&end, const int&power = -1)
+		 ShortestRoad(const T& begin, const T&end, const int&power = INT_MAX)
 			 :EndPoint(end), PowerValue(power), finall(begin == end)
 		 {
 			 if (begin == end)
@@ -75,6 +76,7 @@ namespace Data_structures
 		 void reset();//重置访问图
 		 bool all_visted(T& next_point);//看看是否所有的点都访问了，用于非连通图，如果有没有访问到的，就返回这个点。
 
+		 /*是判断两个边的点的终点是否相同，如果不同说明不会构成回路，终点就是点值最大*/
 		 bool Kruskal_loop(vector<graph_edges<T, int>>&find, graph_edges<T, int>&now_edge);
 	 public:
 		 
@@ -95,6 +97,8 @@ namespace Data_structures
 		 //另一 种仅仅需要边的集合的权值图
 		 Graph(const vector<graph_edges<T, int>>&edges, const bool& direction=false);
 
+		 //=重载  是使用swap来解决 map的复制问题
+		 Graph<T> operator=(Graph<T>);
 
 		 ~Graph();
 		 //顾名思义，就是专用于添加额外的边
@@ -118,7 +122,21 @@ namespace Data_structures
 		 //单源最短路径算法
 		 //Dijkstra法
 		 map<T,ShortestRoad<T>> Dijkstra(const T& begin);
-		 // 打印矩阵队列图
+	 
+		 // function<int(Graph<T>&, list<T>)>extendroad;
+		// template<class T>
+		 int FFsonExtend(list<T>&, const T &, const T & );
+		
+	 public:
+		 //最大流算法 返回值为int,形参是用于寻找增广路径的函数,返回找到的增广路径的最大流。如果为0，说明没有找到
+		 int FordFulkerson(const T&input, const T&output);
+	
+			 
+	
+
+
+		 
+		 // 打印矩阵，队列图
 		 void printt();
 
 		 
@@ -187,14 +205,27 @@ namespace Data_structures
 				 , { 'c', 'd', 3 }, { 'c', 'e', 5 }, { 'c', 'f', 6 }, { 'a', 'g', 14 }
 				 , { 'a', 'f', 16 }, { 'b', 'f', 7 }, { 'g', 'f', 9 }, { 'e', 'f', 2 }
 			 , { 'e', 'g', 8 } };
-			 Graph<char>test(points, edge, false);
-			 graph_edges<char, int>new_edge = { 'z', 'a', 20 };
-			 test.addedge(new_edge,false);
+			 Graph<char>test(points, edge, true);
+			
 			 test.printt();
 			 
-			// auto temp=test.Dijkstra('a');
+			// auto result=test.Dijkstra('a');
 
-			 //int a = 0;
+			 test.FordFulkerson('a', 'g');
+			// int a = 0;
+		 }
+		 void MaxFlow()
+		 {
+			 vector<graph_edges<char, int>>edge = { { 's', 'a', 16 }, { 's', 'b', 13 }, { 'a', 'c', 12 }
+				 , { 'c', 'b', 9 }, { 'b', 'a', 4 }, { 'b', 'd', 14 }, { 'd', 'c', 7 }
+				 , { 'c', 't', 20 }, { 'd', 't', 4 } };
+			 Graph<char>test(edge, true);
+
+			 test.printt();
+
+			 // auto result=test.Dijkstra('a');
+
+			 cout << test.FordFulkerson('s', 't') << endl;
 		 }
 	 }
  }
@@ -305,12 +336,14 @@ namespace Data_structures
 				{
 					mVexs[temp.begin] = point_count;
 					visted_log[temp.begin] = false;
+					mlist[temp.begin] = list<T>();
 					++point_count;
 				}
 				if (mVexs.find(temp.end) == mVexs.end())
 				{
 					mVexs[temp.end] = point_count;
 					visted_log[temp.end] = false;
+					mlist[temp.end] = list<T>();
 					++point_count;
 				}
 
@@ -436,10 +469,28 @@ namespace Data_structures
 	}
 
 	template<class T>
+	Graph<T> Graph<T>::operator=(Graph<T>rhs)
+	{
+		 mVexs=rhs.mVexs;    // 顶点集合
+		mVexNum=rhs.mVexNum;             // 顶点数
+		mEdgNum=rhs.mEdgNum;            // 边数
+
+		visted_log.swap(rhs.visted_log);//访问记录表
+		/*不使用unordered-map的原因： unordered_map需要存储的类自己有一个hash函数，而stl给基本类型提供了hash函数*/
+		mMatrix.swap(rhs.mMatrix);   // 邻接矩阵
+		mlist.swap(rhs.mlist);//链表表示法  还有有向图与无向图的区别
+
+
+		return *this;
+	}
+	template<class T>
 	void Graph<T>::reset()
 	{
 		for (map<T, bool>::iterator it = visted_log.begin(); it != visted_log.end(); ++it)
+		{
 			it->second = false;
+			
+		}
 
 	}
 
@@ -457,7 +508,31 @@ namespace Data_structures
 		}
 		return result;
 	}
+	template<class T>
+	int Graph<T>::FFsonExtend(list<T>&result, const T &input, const T &output)
+	{
+		map<T, ShortestRoad<T>> name = Dijkstra(input);
 
+
+
+		result = name.at(output).road;
+		int power = INT_MAX;
+		if (result.size() == 0)return 0;
+		T be = *(result.begin());
+		T ed;
+		for (auto it = ++result.begin(); it != result.end(); it++)
+		{
+			
+			ed = *(it);
+			if (mMatrix[mVexs.at(be)][mVexs.at(ed)] < power)
+			{
+				power = mMatrix[mVexs.at(be)][mVexs.at(ed)];
+			}
+			be = ed;
+
+		}
+		return power;
+	}
 	template<class T>
 	bool Graph<T>::all_visted(T& next_point)
 	{
@@ -775,33 +850,43 @@ namespace Data_structures
 	template<class T>
 	map<T,ShortestRoad<T>> Graph<T>::Dijkstra(const T& sbegin)
 	{
-		map<T,ShortestRoad<T>> result;//先用list实现，考虑到删除的次数很多，所以很方便
-		map<T,ShortestRoad<T>> U_table;
+		map<T,ShortestRoad<T>> result;
+		map<T,ShortestRoad<T>> U_table;//存储没有标记点的集合
+		//priority_queue<T> U_table_lable;
 		T begin = sbegin;
 		//先初始化U集合
 		for (const pair<T, int> point : mVexs)
 		{
 			ShortestRoad<T> temp(begin, point.first);
 			U_table.insert(make_pair(point.first, temp));
+		//	U_table_lable.push(point.first);
+			
 		
 		}
 
-		
+
+	
 		T NextPoint;
+
+
 		while (result.size() != mVexNum)
 		{
+			//遍历起始点的下一个点，找到与begin连同的点后，更新该点的权值，
+			//更新该点的rode的路径（把源点的road复制过来，然后加上自己这个点）为了顺应这个思想，只把起始点的road写值
+			//找到与begin连通的点中，权值最小的点当做下一个begin点
+			//如果从新begin点到end，与从旧begin点到end相比，路径更短，就更新end的权值，更新end的路径（复制新begin点的list，抛弃旧的，然后加上自己的）
+
 			
-				//遍历起始点的下一个点，找到与begin连同的点后，更新该点的权值，
-				//更新该点的rode的路径（把源点的road复制过来，然后加上自己这个点）为了顺应这个思想，只把起始点的road写值
-				//找到与begin连通的点中，权值最小的点当做下一个begin点
-				//如果从新begin点到end，与从旧begin点到end相比，路径更短，就更新end的权值，更新end的路径（复制新begin点的list，抛弃旧的，然后加上自己的）
-			auto itb = U_table.find(begin);
+				auto itb = U_table.find(begin);
 			
+			//判断源点的存在，然后把源点插入结果集中。
 			if (itb == U_table.end())return result;//并没有这个点
 			itb->second.finall = true;
 			ShortestRoad<T> temp = U_table.at(begin);
 			result.insert(*itb);//先插入源点到结果中
-			
+			/////////////////////////////////////////////////
+			//下面 就是遍历的过程，在这里需要维护一个最小堆
+
 
 			
 			int rule=INT_MAX;
@@ -809,20 +894,22 @@ namespace Data_structures
 			{
 				if (!U_table.at(nextp).finall)//用来确定这个点是否已经访问并加入了解点集中。因为是无相图。
 				{
-					if (U_table.at(nextp).PowerValue == -1 ||
-						U_table.at(nextp).PowerValue > (mMatrix[mVexs.at(begin)][mVexs.at(nextp)] + temp.PowerValue)
-						)
+					//条件是没有访问过，以及从现有的起始点到目标 点的距离要更短
+					if ( U_table.at(nextp).PowerValue > (mMatrix[mVexs.at(begin)][mVexs.at(nextp)] + temp.PowerValue))
 					{
 						//更新最后权值
 						U_table.at(nextp).PowerValue = mMatrix[mVexs.at(begin)][mVexs.at(nextp)] + temp.PowerValue;
+
 						//复制begin的路径
 						list<T>().swap(U_table.at(nextp).road);
 						for (T begin_road : result.at(begin).road)
 							U_table.at(nextp).road.push_back(begin_road);
-
+				
 						U_table.at(nextp).road.push_back(nextp);
 
 					}
+
+
 
 					if (U_table.at(nextp).PowerValue < rule)
 					{
@@ -837,11 +924,93 @@ namespace Data_structures
 
 			}
 			
-			if (rule == INT_MAX)break;//防止出现非连通图的情况
+
+			//下面的设计，是为了在一个支线走到尽头时，遍历剩下的点（finall为FALSE的点）然后找到 目前的powervalue值为最小的点，当做下一个点
+			if (rule == INT_MAX)//这时这个分支走到头了。需要重新找一个最小的权值的点开始,因为不排除有这种情况
+			{
+				int ruler = INT_MAX;
+				for (const auto findnext : U_table)
+				{
+					if (findnext.second.PowerValue < ruler && (!findnext.second.finall))
+					{
+						ruler = findnext.second.PowerValue;
+						NextPoint = findnext.first;
+					}
+				}
+
+			//这里就是当没有找到点之后的退出设置，然后就是非连通图的预防措施，把 剩下的点扔进去。
+				if (ruler == INT_MAX)
+				{
+					for (const auto findnext : U_table)
+						if (!findnext.second.finall)
+							result.insert(findnext);
+					break;
+				}
+
+			}
 			begin = NextPoint;
 		}
 
 		return result;
+	}
+
+	template<typename T>
+	int Graph<T>::FordFulkerson(const T&input,const T&output)
+	{
+		//typedef  Rlist  list < T >;
+
+		
+		Graph<T>LeftGraph = *this; 
+		list<T> extendR;
+		
+		int bigestFlow = 0;
+		//auto a=extendR.begin();
+		int temp = 0;
+		temp= LeftGraph.FFsonExtend(extendR, input, output);
+		while (temp > 0)
+		{
+			bigestFlow += temp;
+			//修改残差图
+			T be = *(extendR.begin());
+			T ed;
+			for (auto it = ++extendR.begin(); it != extendR.end(); it++)
+			{
+
+				ed = *(it);
+				//最后资源枯竭了，所以要删除路
+				//因为肯定有begin->end这个路径，所以只需要考虑a->b的删除，与b->a的添加
+				if ((LeftGraph.mMatrix[LeftGraph.mVexs.at(be)][LeftGraph.mVexs.at(ed)] -= temp) == 0)
+				{
+					auto beit = LeftGraph.mlist[be].begin();
+
+					while (*beit != ed)
+						beit++;
+
+
+					LeftGraph.mlist[be].erase(beit);
+
+				}
+
+				if (LeftGraph.mMatrix[LeftGraph.mVexs.at(ed)][LeftGraph.mVexs.at(be)] == 0)
+					LeftGraph.mlist[ed].push_back(be);
+
+				LeftGraph.mMatrix[LeftGraph.mVexs.at(ed)][LeftGraph.mVexs.at(be)] += temp;
+
+				be = ed;
+
+			}
+			
+
+		//	LeftGraph.printt();
+			temp = LeftGraph.FFsonExtend(extendR, input, output);
+
+		//	LeftGraph.printt();
+		}
+
+			
+		
+		return bigestFlow;
+		
 	}
 	template<class T>
 	void Graph<T>::printt()
