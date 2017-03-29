@@ -7,6 +7,7 @@
 #include"BinarySearchTree.h"
 #include"Graph_Theory.h"
 #include"Redblack.h"
+#include"SortMethod.h"
 using namespace std;
 using namespace Data_structures;
 
@@ -19,9 +20,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	//Test_demo::test_graph_martix();
 	//cout << endl;
 	//Test_demo::test_value_graph();
-	Test_demo::MaxFlow();
+	//Test_demo::MaxFlow();
 
-
+	Data_structures::Sort_Method::TestSoreMethod();
 	return 0;
 }
 

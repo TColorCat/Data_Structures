@@ -692,7 +692,14 @@ namespace Data_structures
 		cout << endl;
 		
 	}
+	/*
+	设图G顶点集合为U，首先任意选择图G中的一点作为起始点a，将该点加入集合V，
+	再从集合U-V中找到另一点b使得点b到V中任意一点的权值最小，此时将b点也加入集合V；
 
+	所以判断的时候，就要比较很多才行。
+	然后挪动到下一个点
+	直到寻找到全部的点为止
+	那这样的话，实际上不需要输入的边的数据，只需要链表与矩阵表示法就可以了。在这里虽然两个方法都用的原因是链表表示法里面没有加权*/
 	template<class T>
 	Graph<T> Graph<T>::prim()
 	{
@@ -710,16 +717,7 @@ namespace Data_structures
 		//先期准备
 		
 		
-		/*
-
-		设图G顶点集合为U，首先任意选择图G中的一点作为起始点a，将该点加入集合V，
-		再从集合U-V中找到另一点b使得点b到V中任意一点的权值最小，此时将b点也加入集合V；
-
-		所以判断的时候，就要比较很多才行。
-		然后挪动到下一个点
-		直到寻找到全部的点为止
-		那这样的话，实际上不需要输入的边的数据，只需要链表与矩阵表示法就可以了。在这里虽然两个方法都用的原因是链表表示法里面没有加权*/
-
+		
 		const pair<T, int>ntemp =*(mVexs.begin());
 
 		finded_point.insert(ntemp.first);//塞进第一个点
@@ -880,7 +878,8 @@ namespace Data_structures
 				auto itb = U_table.find(begin);
 			
 			//判断源点的存在，然后把源点插入结果集中。
-			if (itb == U_table.end())return result;//并没有这个点
+			if (itb == U_table.end())return result;//并没有这个点，所以错误，退出
+
 			itb->second.finall = true;
 			ShortestRoad<T> temp = U_table.at(begin);
 			result.insert(*itb);//先插入源点到结果中
