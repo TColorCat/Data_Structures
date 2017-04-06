@@ -82,6 +82,7 @@
     <ClInclude Include="AVL.h" />
     <ClInclude Include="BinarySearchTree.h" />
     <ClInclude Include="Binary_Heap.h" />
+    <ClInclude Include="Dlink.h" />
     <ClInclude Include="dsexceptions.h" />
     <ClInclude Include="Graph_Theory.h" />
     <ClInclude Include="Redblack.h" />
