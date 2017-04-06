@@ -9,6 +9,7 @@
 #include"Redblack.h"
 #include"SortMethod.h"
 #include"Dlink.h"
+#include"StackArray.h"
 using namespace std;
 using namespace Data_structures;
 
@@ -24,7 +25,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//Test_demo::MaxFlow();
 
 	//Data_structures::Sort_Method::TestSoreMethod();
-	Data_structures::Test_demo::test_DLink();
+	Data_structures::Test_demo::test_strackarray();
 	return 0;
 }
 
