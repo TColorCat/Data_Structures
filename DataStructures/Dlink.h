@@ -32,25 +32,8 @@ namespace Data_structures
 	public:
 		DLink() :head(nullptr), count(0){}
 	
-		~DLink()
-		{
-			LinkNode*temp;
-			LinkNode* store;
-			temp = head->next;
-			// 删除所有的节点
-			
-			while (temp != head)
-			{
-				store =temp ;
-				temp = store->next;
-				delete store;
-			}
-
-			// 删除"表头"
-			delete temp;
-			head = NULL;
-
-		}
+		virtual ~DLink();
+		
 
 		int size(){ return count; }
 		bool is_empty(){ return count==0; }
@@ -103,6 +86,15 @@ namespace Data_structures
 		// 将节点追加到链表的末尾
 		bool append_last(T t)
 		{
+			if (head == nullptr)
+			{
+				LinkNode<T>* pnode = new LinkNode<T>(nullptr, nullptr, t);
+				head = pnode;
+				head->before = pnode;
+				head->next = pnode;
+				count++;
+				return true;
+			}
 			LinkNode<T>* pnode = new LinkNode<T>(head, head->next,t);
 			head->before->next = pnode;
 			head->before= pnode;
@@ -167,6 +159,26 @@ namespace Data_structures
 		}
 
 	};
+	template<class T>
+	DLink<T>::~DLink()
+	{
+		LinkNode<T>*temp;
+		LinkNode<T>* store;
+		temp = head->next;
+		// 删除所有的节点
+
+		while (temp != head)
+		{
+			store = temp;
+			temp = store->next;
+			delete store;
+		}
+
+		// 删除"表头"
+		delete temp;
+		head = NULL;
+
+	}
 
 	namespace Test_demo
 	{
