@@ -57,6 +57,9 @@
     <ClInclude Include="QueueList.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="HaffmanTree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

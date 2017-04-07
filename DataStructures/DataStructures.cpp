@@ -11,6 +11,7 @@
 #include"Dlink.h"
 #include"StackArray.h"
 #include"QueueList.h"
+#include"HaffmanTree.h"
 using namespace std;
 using namespace Data_structures;
 
@@ -26,7 +27,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//Test_demo::MaxFlow();
 
 	//Data_structures::Sort_Method::TestSoreMethod();
-	Data_structures::Test_demo::test_queueList();
+	Data_structures::Test_demo::test_Haffman();
 	return 0;
 }
 

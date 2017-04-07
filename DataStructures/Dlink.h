@@ -32,7 +32,25 @@ namespace Data_structures
 	public:
 		DLink() :head(nullptr), count(0){}
 	
-		virtual ~DLink();
+		virtual ~DLink()
+		{
+			LinkNode<T>*temp;
+			LinkNode<T>* store;
+			temp = head->next;
+			// 删除所有的节点
+
+			while (temp != head)
+			{
+				store = temp;
+				temp = store->next;
+				delete store;
+			}
+
+			// 删除"表头"
+			delete temp;
+			head = NULL;
+
+		}
 		
 
 		int size(){ return count; }
@@ -159,26 +177,26 @@ namespace Data_structures
 		}
 
 	};
-	template<class T>
-	DLink<T>::~DLink()
-	{
-		LinkNode<T>*temp;
-		LinkNode<T>* store;
-		temp = head->next;
-		// 删除所有的节点
+	//template<class T>
+	//DLink<T>::~DLink()
+	//{
+	//	LinkNode<T>*temp;
+	//	LinkNode<T>* store;
+	//	temp = head->next;
+	//	// 删除所有的节点
 
-		while (temp != head)
-		{
-			store = temp;
-			temp = store->next;
-			delete store;
-		}
+	//	while (temp != head)
+	//	{
+	//		store = temp;
+	//		temp = store->next;
+	//		delete store;
+	//	}
 
-		// 删除"表头"
-		delete temp;
-		head = NULL;
+	//	// 删除"表头"
+	//	delete temp;
+	//	head = NULL;
 
-	}
+	//}
 
 	namespace Test_demo
 	{

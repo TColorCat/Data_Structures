@@ -85,6 +85,7 @@
     <ClInclude Include="Dlink.h" />
     <ClInclude Include="dsexceptions.h" />
     <ClInclude Include="Graph_Theory.h" />
+    <ClInclude Include="HaffmanTree.h" />
     <ClInclude Include="QueueList.h" />
     <ClInclude Include="Redblack.h" />
     <ClInclude Include="SortMethod.h" />
